@@ -1,0 +1,5 @@
+.idea/
+.container/
+.jekyll-cache/
+*.lock
+_site/
