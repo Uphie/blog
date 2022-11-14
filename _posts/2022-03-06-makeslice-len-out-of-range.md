@@ -1,9 +1,9 @@
 ---
-title: runtime error\: makeslice\: len out of range
+title: 创建 slice 出错
 author: Uphie
 date: 2022-03-06 13:18:00 +0800
 categories: [技术]
-tags: [go]
+tags: [go,slice]
 math: true
 toc: true
 ---
