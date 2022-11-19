@@ -3,7 +3,7 @@ title: docker容器中的PID
 author: Uphie
 date: 2022-11-18 21:30:20 +0800
 categories: [技术]
-tags: [docker,进程]
+tags: [linux,docker,namespace,进程]
 math: true
 toc: true
 ---
@@ -42,3 +42,9 @@ int pid=clone(main_function,stack_size,CLONE_NEWPID|SIGCHLD,NULL)
 这就是 Linux 容器最基本的实现原理，容器只是一种特殊的进程。
 
 类似的，Linux 还提供了 `Mount`、`Network`、`UTS`、`IPC`、`User` 这些 namespace，用于互相隔离环境，例如 Mount的 namespace 能让被隔离的进程只能看到当前 namespace 下的磁盘挂载信息。
+
+看上去 Docker 使用的 Linux Namespace 非常棒，能隔离进程、文件、网络、用户等等，但仍有缺点。由于容器内进程在宿主机上都是普通的宿主机进程只是被 namespace 隔离了而已，那么这些进程就要共用相同的操作系统内核，那么低版本内核的宿主机不能运行高版本内核的容器。理论上Windows、Mac OS 上也不能运行 Linux 的容器，因为没有 Linux 的宿主环境。为了解决这个问题，Windows 和 mac OS上的 Docker Desktop 软件使用了不同的虚拟化技术启动了Linux虚拟机，Linux 容器实际上是跑在了 Linux 虚拟机上。
+
+另外一个 Linux Namespace 无法解决的问题是时间隔离，如果一个容器修改了系统时间，那么宿主机时间和其他容器时间也会被改变。
+
+参考资料：https://www.zhihu.com/question/517679596/answer/2371614062
