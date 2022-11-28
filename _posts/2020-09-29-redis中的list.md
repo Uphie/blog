@@ -8,7 +8,7 @@ math: true
 toc: true
 ---
 
-最多存储 $${2^32}-1$$ 个元素。
+最多存储 $${2^{32}}-1$$ 个元素。
 
 # 内部编码
 
@@ -37,9 +37,10 @@ redis链表是一个双向无环链表结构，很多发布订阅、慢查询、
 | ------------------ | -------------------------------------- | -------------------------------------- |
 | lpush key element [element...] | 从左侧添加元素                         | O(k)，k为元素个数 |
 | rpush key element [element...] | 从右侧添加元素                         | O(k)，k为元素个数 |
-| linsert key before\|after pivot element | 找到pivot元素，并在其前面或后面插入元素 | O(n)，n为pivot距离头或尾的距离 |
+| linsert key before/after pivot element | 找到pivot元素，并在其前面或后面插入元素 | O(n)，n为pivot距离头或尾的距离 |
 | lpushx key element [element...] | 向左侧添加元素，只有当key存在时，即只追加不创建 | O(k)，k为元素个数 |
 | rpushx key element [element...] | 向右侧添加元素，只有当key存在时，即只追加不创建 | O(k)，k为元素个数 |
+
 ## 查询类
 
 | 命令                                     | 说明                                                         | 时间复杂度 |
@@ -78,6 +79,5 @@ redis链表是一个双向无环链表结构，很多发布订阅、慢查询、
 
 # 常用场景
 
-消息队列，list作为队列用
-
-数据列表
+- 消息队列，list作为队列用
+- 数据列表

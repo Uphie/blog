@@ -10,7 +10,7 @@ toc: true
 如果有意观察的话，会发现 docker容器内初始进程的进程号 PID 很小，似乎就是一个独立的机器，是如何实现的呢？
 
 以 mysql8 容器为例，我们先在容器中先安装下 ps 命令：
-```cosole
+```console
 $ docker exec -it mysql8.0.21 bash
 root@8b28ee20e307:/# apt update
 root@8b28ee20e307:/# apt install procps
@@ -31,11 +31,11 @@ root       539   532  0 16:28 pts/2    00:00:00 ps -ef
 我们知道 Linux 中进程启动都会被分配到一个进程号，即 PID，用于唯一标识这个进程，进程退出 PID 就会被回收。 但实际上上面的情况是个“障眼法”，容器中的进程在宿主机操作系统中分配的 PID 与容器内的 PID 不同，容器内 PID 为1，在宿主机中可能就是 500。实现这个“障眼法”的就是 Linux 的 namespace 机制。
 
 Linux 中创建进程/线程的一个系统调用是：
-```C
+```C++
 int pid=clone(main_function,stack_size,SIGCHLD,NULL);
 ```
 使用系统调用时如果传入 `CLONE_NEWPID` 参数，即：
-```C
+```C++
 int pid=clone(main_function,stack_size,CLONE_NEWPID|SIGCHLD,NULL)
 ```
 新创建的进程会得到一个全新的进程空间，在这个进程空间里新进程的 PID 是1。是不是猜到什么了？在宿主机的进程空间中，PID 还是原来的值，不是1。
