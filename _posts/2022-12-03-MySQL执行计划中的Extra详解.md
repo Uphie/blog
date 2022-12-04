@@ -1,5 +1,5 @@
 ---
-title: MySQL 执行计划中的 type 详解
+title: MySQL 执行计划中的 extra 详解
 author: Uphie
 date: 2022-12-03 17:25:00 +0800
 categories: [技术]
