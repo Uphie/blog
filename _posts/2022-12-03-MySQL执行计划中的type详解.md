@@ -10,7 +10,7 @@ toc: true
 
 
 在开发过程中，我们尝尝使用 `explain` 来查看 sql 语句的性能情况，如：
-```console
+```sql
 mysql> explain select * from test where f1=2;
 +----+-------------+-------+------------+------+---------------+-----------+---------+-------+------+----------+-------+
 | id | select_type | table | partitions | type | possible_keys | key       | key_len | ref   | rows | filtered | Extra |
@@ -67,7 +67,7 @@ CREATE TABLE `sku_stock` (
 
 type 为 ALL 发生在查询在不使用索引的情况下进行了全表扫描。
 
-```console
+```sql
 mysql> explain select * from sku;
 +----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+-------+
 | id | select_type | table | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra |
@@ -92,7 +92,7 @@ mysql> explain select * from sku where supplier_id=10;
 表中只有一行数据（等于系统表），是 `const` 类型的一种特例。
 
 笔者曾用这样的结构与数据尝试
-```
+```sql
 CREATE TABLE `manager` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL COMMENT '管理员名称',
@@ -155,7 +155,7 @@ mysql> explain select * from manager where name='张三';
 `index`，表示查询直接扫描了**整个**索引，这时候没有回表，即使用了覆盖索引。
 
 如：
-```console
+```sql
 mysql> explain select name from sku;
 +----+-------------+-------+------------+-------+---------------+---------------+---------+------+------+----------+-------------+
 | id | select_type | table | partitions | type  | possible_keys | key           | key_len | ref  | rows | filtered | Extra       |
@@ -335,7 +335,7 @@ mysql> explain select * from sku where match(remark) against('小白菜') and na
 
 ## range
 
-`range` 发生在索引范围扫描，如 `<`、`<=`、`>`、`>=`、`!=`、`in`、`between`
+`range` 发生在索引范围扫描，如使用 `=`、`<`、`<=`、`>`、`>=`、`!=`、`<=>`、`in`、`between`、`like` 、`is null`时
 
 ```sql
 mysql> explain select * from sku where id<300;
@@ -366,6 +366,13 @@ mysql> explain select * from sku where price between 3 and 5;
 |  1 | SIMPLE      | sku   | NULL       | range | idx_price     | idx_price | 5       | NULL | 1735 |   100.00 | Using index condition |
 +----+-------------+-------+------------+-------+---------------+-----------+---------+------+------+----------+-----------------------+
 1 row in set (0.00 sec)
+mysql> explain select * from sku where name like '土鸡%';
++----+-------------+-------+------------+-------+---------------+---------------+---------+------+------+----------+-----------------------+
+| id | select_type | table | partitions | type  | possible_keys | key           | key_len | ref  | rows | filtered | Extra                 |
++----+-------------+-------+------------+-------+---------------+---------------+---------+------+------+----------+-----------------------+
+|  1 | SIMPLE      | sku   | NULL       | range | idx_uniq_name | idx_uniq_name | 1022    | NULL |    3 |   100.00 | Using index condition |
++----+-------------+-------+------------+-------+---------------+---------------+---------+------+------+----------+-----------------------+
+1 row in set (0.01 sec)
 ```
 
 # 小结
