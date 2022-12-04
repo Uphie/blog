@@ -1,7 +1,7 @@
 ---
 title: MySQL 执行计划中的 type 详解
 author: Uphie
-date: 2022-12-03 20:20:20 +0800
+date: 2022-12-03 13:20:20 +0800
 categories: [技术]
 tags: [mysql]
 math: true
@@ -401,7 +401,7 @@ mysql> explain select * from sku where price<100;
 +----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+-------------+
 1 row in set (0.00 sec)
 ```
-我们可以看到同样的查询语句执行计划不同，只是 where 条件稍有不同。原因在于当 `price<100` 时该条件下已经覆盖了绝大部分数据了，使用全表扫描性能由于索引扫描，也就是这时发生了索引失效。这也是我们使用 MySQL 时需要注意的一点。
+我们可以看到同样类型的查询语句执行计划不同，只是 where 条件稍有不同。原因在于当 `price<100` 时该条件下已经覆盖了绝大部分数据，使用全表扫描性能优于索引扫描，也就是这时发生了索引失效。这也是我们使用 MySQL 时需要注意的一点。
 
 
-
+参考链接：[https://dev.mysql.com/doc/refman/8.0/en/explain-output.html#jointype](https://dev.mysql.com/doc/refman/8.0/en/explain-output.html#jointype)
