@@ -8,7 +8,48 @@ math: true
 toc: true
 ---
 
-上篇文章介绍了 MySQL 执行计划中的 type，这篇文章介绍执行计划中的 Extra，并且沿用上篇文章中的数据库表。
+上篇文章介绍了 MySQL 执行计划中的 type，这篇文章介绍执行计划中的 Extra，并且沿用上篇文章中的数据库表，不过做了些改动，仍然使用 MySQL8.0.21 讲解。
+
+```sql
+CREATE TABLE `sku` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '商品名',
+  `cat_1` int unsigned NOT NULL COMMENT '一级分类',
+  `cat_2` int unsigned NOT NULL COMMENT '二级分类',
+  `cat_3` int unsigned NOT NULL DEFAULT '20' COMMENT '三级分类',
+  `alias` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '别名',
+  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '备注',
+  `price` decimal(10,2) NOT NULL COMMENT '单价',
+  `supplier_id` int NOT NULL COMMENT '供应商 ID',
+  `producer_id` int DEFAULT NULL COMMENT '生产厂家 ID',
+  `batch_num` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '生产批次号',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `idx_uniq_name` (`name`),
+  UNIQUE KEY `idx_batch_num` (`producer_id`,`batch_num`),
+  KEY `idx_price` (`price`),
+  KEY `idx_alias` (`alias`),
+  KEY `idx_cat` (`cat_1`,`cat_2`,`cat_3`),
+  FULLTEXT KEY `idx_remark` (`remark`)
+) ENGINE=InnoDB AUTO_INCREMENT=8491 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- sku 表数据略
+
+CREATE TABLE `sku_stock` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `stock` decimal(10,2) NOT NULL COMMENT '库存',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- sku_stock 表数据略
+
+CREATE TABLE `book` (
+  `name` varchar(255) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- book 表无数据
+```
 
 Extra 描述了执行计划中附加的更加具体的执行计划信息，能帮助开发人员了解更详尽的sql执行方案。
 
@@ -79,9 +120,9 @@ mysql> explain select cat_1 from sku group by cat_1;
 
 # Using union
 
-发生在同时使用多个索引的情况。
+发生在同时使用多个索引的情况，也就是索引合并，这时 `type` 为 `index_merge`。索引合并只会发生在单表查询中，多个索引扫描到的结果进行并集、交集、并集再交集。
 
-如：
+如下，这条查询使用了索引 `idx_uniq_name`和`idx_alias`，扫描结果取了并集：
 ```sql
 mysql> explain select * from sku where name='小白菜' or alias='小白菜';
 +----+-------------+-------+------------+-------------+-------------------------+-------------------------+-----------+------+------+----------+---------------------------------------------------+
@@ -185,7 +226,7 @@ mysql> explain select min(price) from sku;
 
 # Impossible WHERE
 
-where 语句不可能查到。这是无效的查询。
+where 语句不可能查到。这是无效的查询，开发者应避免这种情况。
 
 如：
 ```sql
@@ -202,9 +243,26 @@ mysql> explain select * from sku where cat_1 is null;
 
 # Impossible HAVING
 
-HAVING子句始终为false,不会命中任何行。
+HAVING子句始终为false,不会命中任何行。这是无效的查询，开发者应避免这种情况。
 
-笔者未找到这种情况下的 sql 示例，待补充。
+如：
+```sql
+mysql> explain select cat_1,sum(1) as cnt from sku group by cat_1 having cat_1 is null;
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+-------------------+
+| id | select_type | table | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra             |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+-------------------+
+|  1 | SIMPLE      | NULL  | NULL       | NULL | NULL          | NULL | NULL    | NULL | NULL | NULL     | Impossible HAVING |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+-------------------+
+1 row in set (0.00 sec)
+mysql> explain select cat_1,sum(1) as cnt from sku group by cat_1 having cat_1<0;
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+-------------------+
+| id | select_type | table | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra             |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+-------------------+
+|  1 | SIMPLE      | NULL  | NULL       | NULL | NULL          | NULL | NULL    | NULL | NULL | NULL     | Impossible HAVING |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+-------------------+
+1 row in set (0.00 sec)
+```
+注：cat_1 不能为 null 且不能为负，所以 having 子句始终为 false。
 
 
 # Not exists
@@ -238,7 +296,7 @@ mysql> explain select sku.* from sku left join sku_stock on sku.id=sku_stock.id 
 注：sku_stock 表中不存在 id=10 的数据。
 
 MyISAM 引擎下空表查询：
-```
+```sql
 mysql> explain select * from book;
 +----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------+
 | id | select_type | table | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra                          |
@@ -267,7 +325,7 @@ mysql> explain select max(price) from sku where price>30;
 
 # Zero limit
 
-使用了 `limit 0`。这是无效的查询。
+使用了 `limit 0`。这是无效的查询，开发者应避免这种情况。
 ```sql
 mysql> explain select * from sku limit 0;
 +----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+------------+

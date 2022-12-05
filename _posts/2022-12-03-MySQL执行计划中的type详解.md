@@ -47,19 +47,19 @@ CREATE TABLE `sku` (
   FULLTEXT KEY `idx_remark` (`remark`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8491 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-// sku 表数据，略
+-- sku 表数据，略
 
 CREATE TABLE `sku_stock` (
-  `id` int NOT NULL COMMENT 'sku id',
+  `id` int NOT NULL AUTO_INCREMENT,
   `stock` decimal(10,2) NOT NULL COMMENT '库存',
   `update_time` datetime NOT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-// sku_stock 表数据，略
+-- sku_stock 表数据，略
 ```
 
-本文以MySQL8.0.21进行讲解。
+本文以 MySQL8.0.21 进行讲解。
 
 
 # 常见类型
