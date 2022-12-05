@@ -120,7 +120,7 @@ mysql> explain select cat_1 from sku group by cat_1;
 
 # Using union
 
-发生在同时使用多个索引的情况，也就是索引合并，这时 `type` 为 `index_merge`。索引合并只会发生在单表查询中，多个索引扫描到的结果进行并集、交集、并集再交集。
+发生在同时使用多个索引的情况，也就是索引合并，这时 `type` 为 `index_merge`。索引合并只会发生在单表查询中，多个索引扫描到的结果进行并集、交集、先交集再并集。
 
 如下，这条查询使用了索引 `idx_uniq_name`和`idx_alias`，扫描结果取了并集：
 ```sql
