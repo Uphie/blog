@@ -1,14 +1,14 @@
 ---
-title: Ububtu安装docker
+title: Ubuntu安装docker
 author: Uphie
 date: 2022-11-20 20:13:00 +0800
 categories: [技术]
-tags: [docker]
+tags: [linux,docker,安装]
 math: true
 toc: true
 ---
 
-以 Ubuntu server为例安装 docker。
+此文以 Ubuntu Server为例记录安装 docker步骤。
 
 1. 设置软件仓库
 
