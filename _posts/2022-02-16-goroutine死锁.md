@@ -76,7 +76,8 @@ func write(c chan int) {
 
 对于未关闭的 channel，for 循环读取不到数据后就会阻塞，直到写操作执行；但是对于已关闭的 channel，for 循环读取不到数据后就会结束退出循环。
 
-另外补充，`for range` 语句遍历 channel 是一种阻塞读的方式，同样阻塞读的还有 `value:=<- somechan`，`<- somechan` 语句，读不到数据时就会一直等待 channel 的写操作。除此之外有一种非阻塞读，即 `select case` 语句，读不到数据时就会退出。
+另外补充，`for range` 语句遍历 channel 是一种阻塞读的方式，同样阻塞读的还有 `value:=<- somechan`，`<- somechan` 语句，读不到数据时就会一直等待 channel 的写操作，不过 `for range` 语句是不定次数的读，后两者是一次性读。
+除此之外有一种非阻塞读，即 `select case` 语句，读不到数据时就会退出。
 
 我们将最上面的代码改造下：
 ```go
@@ -127,3 +128,33 @@ from channel get  8
 from channel get  9
 select nothing
 ```
+
+或者这样改造，读次数与写次数相同，也能避免死锁：
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func write(c chan int) {
+	for i := 0; i < 10; i++ {
+		c <- i
+		time.Sleep(time.Second)
+	}
+}
+
+func main() {
+	var c = make(chan int)
+
+	go write(c)
+
+	for i := 0; i < 10; i++ {
+		val := <-c
+		fmt.Println("from channel get ", val)
+	}
+}
+```
+
+总之读者要理解死锁的本质，根据实际需要编写合适的代码。
