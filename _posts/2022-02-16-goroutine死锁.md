@@ -3,7 +3,7 @@ title: fatal error, all goroutines are asleep - deadlock!
 author: Uphie
 date: 2022-02-16 22:20:20 +0800
 categories: [技术]
-tags: [go,goroutine]
+tags: [go,channel,goroutine]
 math: true
 toc: true
 ---
