@@ -1,7 +1,7 @@
 ---
 title: 用 Python 启动一个临时 FTP 服务
 author: Uphie
-date: 2023-02-17 17:13:00 +0800
+date: 2023-02-19 19:13:00 +0800
 categories: [技术]
 tags: [python,ftp]
 math: true
