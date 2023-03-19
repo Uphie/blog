@@ -74,6 +74,17 @@ func Open(name string) (*File, error) {
 	return OpenFile(name, O_RDONLY, 0)
 }
 ```
-可以看到，返回的 file 关联的文件描述符是只读模式！不用于写，所以才 `bad file descriptor`。
+可以看到，返回的 file 只读，拿去写就会有问题。
+
+再来说下文件描述符（file descriptor），文件描述符是一个标识计算机操作系统中打开的文件（广义上的文件，下同）的唯一非负整数。它描述了一个数据源，以及数据源怎样被访问。
+
+每个被打开的文件都至少有一个文件描述符，可以同时有多个文件描述符。
+
+当一个进程成功打开一个文件描述符，操作系统内核返回一个文件描述符，该文件描述符指向一个全局文件表的项。文件表向包含被打开文件的 inode、字节偏移量，以及数据流的访问限制（只读、只写，等等）。
+
+[![文件描述符.png](https://www.computerhope.com/jargon/f/file-descriptor.jpg)](https://www.computerhope.com/jargon/f/file-descriptor.jpg)
+
+
+言归正传，解决方法就是把文件打开方式修改一下：
 
 将 `file, err = os.Open(logPath)` 修改为 `file, err = os.OpenFile(logPath, os.O_RDWR, 0)` 即可。
