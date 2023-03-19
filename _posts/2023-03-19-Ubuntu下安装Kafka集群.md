@@ -3,12 +3,12 @@ title: Ubuntu下安装Kafka集群
 author: Uphie
 date: 2023-03-19 15:13:00 +0800
 categories: [技术]
-tags: [linux,kafka,安装]
+tags: [linux,kafka,kraft,安装]
 math: true
 toc: true
 ---
 
-笔者有3台虚拟机机器，分别为 master、node1、node2，在这三台机器上部署 Kafka 集群。
+笔者有3台虚拟机机器，分别为 master、node1、node2，它们可以通过主机名互联互通，在这三台机器上部署 Kafka 集群。
 
 # 配置 Java 环境
 
@@ -61,7 +61,7 @@ root@master:/home/uphie# wget https://downloads.apache.org/kafka/3.4.0/kafka_2.1
 ```
 
 将下载的安装包复制到另外两个节点：
-```
+```console
 root@master:/home/uphie# scp kafka_2.13-3.4.0.tgz uphie@node1:/home/uphie/
 uphie@node1's password:
 kafka_2.13-3.4.0.tgz                                                                                                                              100%  101MB  72.7MB/s   00:01
@@ -77,7 +77,7 @@ root@master:/home/uphie# tar -zxf kafka_2.13-3.4.0.tgz
 ```
 
 移到 /opt 目录下：
-```
+```console
 root@master:/home/uphie# mv /home/uphie/kafka_2.13-3.4.0 /opt/
 ```
 
@@ -92,17 +92,12 @@ root@master:/home/uphie# ln -s /opt/kafka_2.13-3.4.0 /opt/kafka
 
 
 修改 kraft 配置文件：
-```cosole
+```console
 root@master:/home/uphie# vim /opt/kafka/config/kraft/server.properties
 ```
 
 修改以下配置，读者也可根据自己需要修改其他配置：
 ```
-############################# Server Basics #############################
-
-# The role of this server. Setting this puts us in KRaft mode
-process.roles=broker,controller
-
 # The node id associated with this instance's roles
 # 节点 ID，每个节点的 ID 需不同
 node.id=100
@@ -110,6 +105,11 @@ node.id=100
 # The connect string for the controller quorum
 # 节点选举用的连接方式
 controller.quorum.voters=100@master:9093,101@node1:9093,102@node2:9093
+
+# Listener name, hostname and port the broker will advertise to clients.
+# If not set, it uses the value for "listeners".
+# 对外代理地址，每个节点的对外代理地址不同
+advertised.listeners=PLAINTEXT://master:9092
 ```
 
 生成一个 cluster ID：
@@ -197,3 +197,21 @@ testtopic
 ```
 
 自此 Kafka 集群安装部署完成。
+
+
+# 使用 Web UI（可选）
+
+这个步骤可选，读者可以根据自己需要选择是否要启动一个 Web UI 页面来管理 Kafka。
+
+笔者选择 docker 容器启动（参考 [https://github.com/provectus/kafka-ui](https://github.com/provectus/kafka-ui) ）。
+
+```console
+$ docker pull provectuslabs/kafka-ui:master
+$ docker run --name kafka_ui \
+      -p 8080:8080 \
+      -e KAFKA_CLUSTERS_0_NAME=vm_kafka \
+      -e KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=master:9092,node1:9092,node2:9092 \
+      -d provectuslabs/kafka-ui:master
+```
+
+稍等一会儿，让后在浏览器中打开 `http://localhost:8080` 查看。
