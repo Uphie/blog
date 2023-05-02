@@ -112,6 +112,8 @@ controller.quorum.voters=100@master:9093,101@node1:9093,102@node2:9093
 advertised.listeners=PLAINTEXT://master:9092
 ```
 
+注：建议修改 `log.dirs` 的默认目录，如 `log.dirs=/var/kraft-combined-logs`，具体原因参见 [https://uphie.studio/posts/Kafka%E9%87%8D%E5%90%AF%E5%A4%B1%E8%B4%A5/](https://uphie.studio/posts/Kafka%E9%87%8D%E5%90%AF%E5%A4%B1%E8%B4%A5/)
+
 生成一个 cluster ID：
 ```
 root@master:/home/uphie# /opt/kafka/bin/kafka-storage.sh random-uuid
@@ -134,7 +136,6 @@ root@master:/home/uphie# vim /etc/systemd/system/kafka.service
 [Unit]
 Description=Apache Kafka Server
 Documentation=http://kafka.apache.org/documentation.html
-Requires=zookeeper.service
  
 [Service]
 Type=simple
