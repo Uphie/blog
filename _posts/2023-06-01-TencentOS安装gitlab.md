@@ -10,7 +10,7 @@ toc: true
 
 由于之前承担 git 的腾讯云服务器配置低性能较差，这次需要更换一个服务器，再安装一次 gitlab，记录一下过程。
 
-本次安装免费的社区版，其自带 nginx 、Postgresql、redis，因此注意下避免重复安装。
+gitlab 自带 nginx 、Postgresql、redis，读者要注意下避免重复安装。
 
 本机系统版本：
 ```
@@ -90,7 +90,7 @@ The repository is setup! You can now install packages.
 
 # 安装
 
-安装前先将自己的域名解析到当前机器，然后指定你的域名，如 git.example.com，安装 gitlab：
+安装前先将自己的域名解析到当前机器，然后指定你的域名，如 `git.example.com`，安装 gitlab：
 ```
 $ EXTERNAL_URL="git.example.com" yum install -y gitlab-ce
 ```
