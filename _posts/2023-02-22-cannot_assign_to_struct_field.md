@@ -35,21 +35,23 @@ cannot assign to struct field m["bob"].Name in map
 
  1. 常量
 
- ```go
+```go
  const SIZE = 100
 
 // invalid operation: cannot take address of SIZE (untyped int constant 100)
 fmt.Println(&SIZE)
- ```
+```
 
- 2. 字符串
- ```go
+2. 字符串
+
+```go
  // invalid operation: cannot take address of "hello" (untyped string constant)
 fmt.Println(&"hello")
- ```
+```
 
- 3. 函数或方法
- ```go
+3. 函数或方法
+
+```go
 func sum(x, y int) int {
 	return x + y
 }
@@ -66,20 +68,20 @@ func (u *User) Walk() {
 }
 // invalid operation: cannot take address of u.Walk (value of type func())
 fmt.Println(&u.Walk)
- ```
+```
 
- 4. 字面量
+4. 字面量
 
 基础字面量：
- ```go
+```go
 // invalid operation: cannot take address of 1 (untyped int constant)
 fmt.Println(&1)
 // invalid operation: cannot take address of 1.1 (untyped float constant)
 fmt.Println(&1.1)
- ```
+```
 
 组合字面量：
- ```go
+```go
  type User struct {
 	Name string
 }
@@ -99,7 +101,7 @@ fmt.Println(&NewUser("uphie"))
 
 可以拿文中开头的错误作为例子。为什么map中的元素不可寻址？
 
-如果可寻址，
+如果可寻址:
 1. 如果map中元素不存在，则返回零值，但零值是不可变对象
 2. 如果map中元素存在，map中元素可能因为扩容、缩容地址发生变化，那么取到的地址将是无意义的
 
