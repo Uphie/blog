@@ -1,7 +1,7 @@
 ---
 title: cannot assign to struct field m["bob"].Name in map
 author: Uphie
-date: 2023-03-33 18:43:00 +0800
+date: 2023-02-22 18:43:00 +0800
 categories: [技术]
 tags: [go]
 math: true
